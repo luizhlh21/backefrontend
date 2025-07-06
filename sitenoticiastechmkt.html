@@ -1,0 +1,323 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>TecMark News</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+      font-family: 'Segoe UI', sans-serif;
+    }
+
+    body {
+      background-color: #f4f4f4;
+      color: #333;
+      transition: 0.3s;
+    }
+
+    body.dark {
+      background-color: #1e1e1e;
+      color: #eee;
+    }
+
+    header {
+      background-color: #1a1a1a;
+      color: #fff;
+      padding: 20px 30px;
+      position: sticky;
+      top: 0;
+      z-index: 999;
+    }
+
+    header h1 {
+      font-size: 2em;
+    }
+
+    nav {
+      margin-top: 10px;
+    }
+
+    nav a {
+      color: #fff;
+      margin-right: 15px;
+      text-decoration: none;
+      font-weight: bold;
+    }
+
+    nav a:hover {
+      text-decoration: underline;
+    }
+
+    .menu-toggle {
+      display: none;
+      cursor: pointer;
+    }
+
+    .container {
+      max-width: 1200px;
+      margin: auto;
+      padding: 20px;
+    }
+
+    .highlight {
+      background-color: #ffffff;
+      padding: 20px;
+      margin-bottom: 30px;
+      border-left: 5px solid #007bff;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+    }
+
+    .highlight h2 {
+      margin-bottom: 10px;
+      color: #007bff;
+    }
+
+    .articles {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+      gap: 20px;
+    }
+
+    .article {
+      background-color: #fff;
+      padding: 15px;
+      border-radius: 5px;
+      box-shadow: 0 1px 4px rgba(0,0,0,0.1);
+      position: relative;
+    }
+
+    body.dark .article {
+      background-color: #2a2a2a;
+    }
+
+    .article h3 {
+      font-size: 1.2em;
+      margin-bottom: 10px;
+      color: #333;
+    }
+
+    .article p {
+      font-size: 0.95em;
+      color: #666;
+    }
+
+    .counter {
+      font-size: 0.8em;
+      color: #888;
+      position: absolute;
+      bottom: 10px;
+      right: 10px;
+    }
+
+    footer {
+      background-color: #1a1a1a;
+      color: #fff;
+      text-align: center;
+      padding: 15px;
+      margin-top: 40px;
+    }
+
+    button {
+      margin-top: 10px;
+      padding: 8px 12px;
+      background-color: #007bff;
+      color: white;
+      border: none;
+      border-radius: 3px;
+      cursor: pointer;
+    }
+
+    button:hover {
+      background-color: #0056b3;
+    }
+
+    input[type="text"], input[type="email"] {
+      padding: 8px;
+      width: 100%;
+      margin-top: 10px;
+      margin-bottom: 10px;
+    }
+
+    #newsletter {
+      margin-top: 40px;
+      padding: 20px;
+      background-color: #fff;
+      box-shadow: 0 1px 5px rgba(0,0,0,0.1);
+    }
+
+    #comments {
+      margin-top: 40px;
+    }
+
+    #comments textarea {
+      width: 100%;
+      height: 80px;
+      margin-top: 10px;
+      padding: 10px;
+    }
+
+    .comment {
+      margin-top: 15px;
+      padding: 10px;
+      background: #eee;
+      border-left: 4px solid #007bff;
+    }
+
+    body.dark .comment {
+      background-color: #333;
+    }
+
+    .floating-whatsapp {
+      position: fixed;
+      bottom: 20px;
+      right: 20px;
+      background-color: #25d366;
+      color: white;
+      padding: 12px 15px;
+      border-radius: 50%;
+      font-size: 24px;
+      text-decoration: none;
+      z-index: 1000;
+    }
+
+    @media (max-width: 768px) {
+      nav {
+        display: none;
+        flex-direction: column;
+      }
+      nav.show {
+        display: flex;
+      }
+      .menu-toggle {
+        display: block;
+        background: none;
+        border: none;
+        color: white;
+        font-size: 1.5em;
+        margin-top: 10px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>TecMark News</h1>
+    <button class="menu-toggle" onclick="toggleMenu()">☰</button>
+    <nav id="menu">
+      <a href="#tecnologia">Tecnologia</a>
+      <a href="#marketing">Marketing Digital</a>
+      <a href="#ultimas">Últimas Notícias</a>
+      <a href="#newsletter">Newsletter</a>
+    </nav>
+    <button onclick="toggleDarkMode()">🌙 Modo Escuro</button>
+  </header>
+
+  <div class="container">
+    <input type="text" id="searchInput" placeholder="🔍 Buscar notícia..." onkeyup="searchArticles()"/>
+
+    <section class="highlight" id="ultimas">
+      <h2>Notícia em Destaque</h2>
+      <p>OpenAI lança nova tecnologia que promete revolucionar o atendimento ao cliente com IA.</p>
+    </section>
+
+    <section>
+      <h2 id="tecnologia">Notícias de Tecnologia</h2>
+      <div class="articles" id="tech-news"></div>
+    </section>
+
+    <section style="margin-top: 40px;">
+      <h2 id="marketing">Notícias de Marketing Digital</h2>
+      <div class="articles" id="marketing-news"></div>
+    </section>
+
+    <section id="newsletter">
+      <h2>📬 Assine nossa Newsletter</h2>
+      <input type="email" placeholder="Seu melhor e-mail"/>
+      <button>Inscrever-se</button>
+    </section>
+
+    <section id="comments">
+      <h2>💬 Comentários</h2>
+      <textarea id="commentInput" placeholder="Escreva seu comentário..."></textarea>
+      <button onclick="addComment()">Enviar</button>
+      <div id="commentList"></div>
+    </section>
+  </div>
+
+  <footer>
+    <p>&copy; 2025 TecMark News - Todos os direitos reservados</p>
+  </footer>
+
+  <a href="https://wa.me/5599999999999" target="_blank" class="floating-whatsapp">💬</a>
+
+  <script>
+    const techArticles = [
+      { title: "Apple anuncia novo chip M4 com IA integrada", content: "Melhor desempenho para tarefas de IA em dispositivos móveis." },
+      { title: "Google lança plataforma de IA para desenvolvedores", content: "Ferramenta com foco em apps generativos e automação." },
+      { title: "Samsung revela smartphone com bateria de grafeno", content: "Promessa de carregamento completo em menos de 10 minutos." }
+    ];
+
+    const marketingArticles = [
+      { title: "Tendências do tráfego pago em 2025", content: "Automação com IA e personalização em tempo real." },
+      { title: "Marketing de conteúdo com inteligência artificial", content: "Como criar artigos otimizados com ferramentas de IA." },
+      { title: "A nova era do SEO com ChatGPT", content: "IA está mudando a forma como buscamos e encontramos conteúdo." }
+    ];
+
+    let viewCount = 0;
+
+    function renderArticles(sectionId, articles) {
+      const container = document.getElementById(sectionId);
+      articles.forEach(article => {
+        const div = document.createElement("div");
+        div.className = "article";
+        div.innerHTML = `<h3>${article.title}</h3><p>${article.content}</p><div class="counter">👁️ Visualizações: <span>${Math.floor(Math.random()*100+1)}</span></div>`;
+        container.appendChild(div);
+      });
+    }
+
+    renderArticles("tech-news", techArticles);
+    renderArticles("marketing-news", marketingArticles);
+
+    function toggleDarkMode() {
+      document.body.classList.toggle("dark");
+    }
+
+    function toggleMenu() {
+      document.getElementById("menu").classList.toggle("show");
+    }
+
+    function addComment() {
+      const input = document.getElementById("commentInput");
+      if (input.value.trim() !== "") {
+        const div = document.createElement("div");
+        div.className = "comment";
+        div.textContent = input.value;
+        document.getElementById("commentList").appendChild(div);
+        input.value = "";
+      }
+    }
+
+    function searchArticles() {
+      const input = document.getElementById("searchInput").value.toLowerCase();
+      document.querySelectorAll('.article').forEach(el => {
+        const text = el.innerText.toLowerCase();
+        el.style.display = text.includes(input) ? "block" : "none";
+      });
+    }
+
+    // Scroll infinito simulado
+    window.addEventListener("scroll", () => {
+      if (window.innerHeight + window.scrollY >= document.body.offsetHeight - 200) {
+        if (viewCount < 1) {
+          renderArticles("tech-news", techArticles);
+          renderArticles("marketing-news", marketingArticles);
+          viewCount++;
+        }
+      }
+    });
+  </script>
+</body>
+</html>
