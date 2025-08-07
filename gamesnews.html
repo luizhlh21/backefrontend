@@ -1,0 +1,198 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Game News & Store</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: 'Arial', sans-serif;
+      background: #1a1a1a;
+      color: #fff;
+    }
+
+    header {
+      background: #111;
+      padding: 20px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    header h1 {
+      color: #00ffcc;
+    }
+
+    nav {
+      display: flex;
+      gap: 20px;
+    }
+
+    nav a {
+      color: #fff;
+      text-decoration: none;
+      font-weight: bold;
+    }
+
+    .menu-toggle {
+      display: none;
+      flex-direction: column;
+      cursor: pointer;
+    }
+
+    .menu-toggle div {
+      width: 25px;
+      height: 3px;
+      background: #fff;
+      margin: 4px 0;
+    }
+
+    .container {
+      padding: 20px;
+    }
+
+    .section-title {
+      margin-bottom: 10px;
+      color: #00ffcc;
+    }
+
+    .news, .store {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+      gap: 20px;
+    }
+
+    .card {
+      background: #222;
+      padding: 15px;
+      border-radius: 10px;
+      box-shadow: 0 0 10px #000;
+    }
+
+    .card img {
+      width: 100%;
+      border-radius: 10px;
+      margin-bottom: 10px;
+    }
+
+    .card h3 {
+      margin-bottom: 10px;
+      color: #00ffcc;
+    }
+
+    .card p {
+      font-size: 0.9rem;
+      line-height: 1.4;
+    }
+
+    .price {
+      color: #0f0;
+      font-weight: bold;
+      margin-top: 10px;
+    }
+
+    @media (max-width: 768px) {
+      nav {
+        display: none;
+        flex-direction: column;
+        background: #111;
+        position: absolute;
+        top: 70px;
+        right: 0;
+        width: 200px;
+        padding: 20px;
+      }
+
+      nav.active {
+        display: flex;
+      }
+
+      .menu-toggle {
+        display: flex;
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <header>
+    <h1>Game News & Store</h1>
+    <div class="menu-toggle" id="menu-toggle">
+      <div></div>
+      <div></div>
+      <div></div>
+    </div>
+    <nav id="nav">
+      <a href="#news">Notícias</a>
+      <a href="#store">Loja</a>
+      <a href="#contato">Contato</a>
+    </nav>
+  </header>
+
+  <main class="container">
+    <section id="news">
+      <h2 class="section-title">Últimas Notícias</h2>
+      <div class="news">
+        <div class="card">
+          <img src="https://via.placeholder.com/400x200?text=Playstation+5" alt="Notícia PS5">
+          <h3>PlayStation 5 recebe nova atualização com melhorias gráficas</h3>
+          <p>A Sony lançou uma nova atualização que melhora o desempenho em jogos como Spider-Man 2 e Horizon Forbidden West.</p>
+        </div>
+        <div class="card">
+          <img src="https://via.placeholder.com/400x200?text=Xbox+Series+X" alt="Notícia Xbox">
+          <h3>Xbox anuncia parceria com estúdios japoneses</h3>
+          <p>A Microsoft foca no mercado asiático com grandes colaborações para o próximo ano.</p>
+        </div>
+        <div class="card">
+          <img src="https://via.placeholder.com/400x200?text=Nintendo+Switch" alt="Notícia Switch">
+          <h3>Nintendo Switch 2 pode ser revelado ainda este ano</h3>
+          <p>Rumores apontam que o novo console híbrido da Nintendo será lançado no fim do ano.</p>
+        </div>
+      </div>
+    </section>
+
+    <section id="store" style="margin-top: 40px;">
+      <h2 class="section-title">Consoles à Venda</h2>
+      <div class="store">
+        <div class="card">
+          <img src="https://via.placeholder.com/400x200?text=PS5" alt="PlayStation 5">
+          <h3>PlayStation 5</h3>
+          <p>Console de última geração com gráficos incríveis e jogos exclusivos.</p>
+          <div class="price">R$ 4.499,00</div>
+        </div>
+        <div class="card">
+          <img src="https://via.placeholder.com/400x200?text=Xbox+Series+X" alt="Xbox Series X">
+          <h3>Xbox Series X</h3>
+          <p>Desempenho poderoso com Game Pass incluso.</p>
+          <div class="price">R$ 4.299,00</div>
+        </div>
+        <div class="card">
+          <img src="https://via.placeholder.com/400x200?text=Nintendo+Switch" alt="Nintendo Switch">
+          <h3>Nintendo Switch</h3>
+          <p>Experiência híbrida para jogar em casa ou em movimento.</p>
+          <div class="price">R$ 2.299,00</div>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <footer style="text-align: center; padding: 20px; background: #111; margin-top: 40px;">
+    &copy; 2025 Game News & Store - Todos os direitos reservados.
+  </footer>
+
+  <script>
+    const toggle = document.getElementById('menu-toggle');
+    const nav = document.getElementById('nav');
+
+    toggle.addEventListener('click', () => {
+      nav.classList.toggle('active');
+    });
+  </script>
+</body>
+</html>

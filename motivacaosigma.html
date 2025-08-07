@@ -1,0 +1,172 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Motivação Sigma</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: Arial, sans-serif;
+      background: linear-gradient(to right, #111, #222);
+      color: white;
+      line-height: 1.6;
+    }
+
+    header {
+      background-color: #000;
+      padding: 20px 40px;
+      text-align: center;
+      border-bottom: 3px solid #FFD700;
+    }
+
+    header h1 {
+      color: #FFD700;
+      font-size: 2.5rem;
+    }
+
+    nav {
+      margin-top: 10px;
+    }
+
+    nav a {
+      color: #fff;
+      text-decoration: none;
+      margin: 0 15px;
+      font-weight: bold;
+      transition: color 0.3s ease;
+    }
+
+    nav a:hover {
+      color: #FFD700;
+    }
+
+    .hero {
+      text-align: center;
+      padding: 60px 20px;
+      background: url('https://images.unsplash.com/photo-1557682260-9670c7e7e8a6') no-repeat center center/cover;
+    }
+
+    .hero h2 {
+      font-size: 2.5rem;
+      margin-bottom: 20px;
+      background-color: rgba(0,0,0,0.6);
+      display: inline-block;
+      padding: 10px 20px;
+      border-radius: 10px;
+    }
+
+    .hero p {
+      font-size: 1.2rem;
+      background-color: rgba(0,0,0,0.6);
+      display: inline-block;
+      padding: 10px 20px;
+      border-radius: 10px;
+    }
+
+    .section {
+      padding: 50px 20px;
+      text-align: center;
+      background-color: #1a1a1a;
+    }
+
+    .section h3 {
+      color: #FFD700;
+      font-size: 2rem;
+      margin-bottom: 20px;
+    }
+
+    .section p {
+      max-width: 800px;
+      margin: 0 auto;
+    }
+
+    .cta {
+      margin-top: 30px;
+    }
+
+    .cta button {
+      background-color: #FFD700;
+      border: none;
+      padding: 15px 30px;
+      font-size: 1rem;
+      font-weight: bold;
+      color: #000;
+      border-radius: 8px;
+      cursor: pointer;
+      transition: background-color 0.3s ease;
+    }
+
+    .cta button:hover {
+      background-color: #e6c200;
+    }
+
+    footer {
+      background-color: #000;
+      color: #888;
+      text-align: center;
+      padding: 20px;
+      font-size: 0.9rem;
+    }
+
+    @media (max-width: 600px) {
+      header h1 {
+        font-size: 2rem;
+      }
+      .hero h2 {
+        font-size: 1.8rem;
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <header>
+    <h1>Motivação Sigma</h1>
+    <nav>
+      <a href="#filosofia">Filosofia Clássica</a>
+      <a href="#empreendedorismo">Empreendedorismo Digital</a>
+      <a href="#canal">Canal no YouTube</a>
+    </nav>
+  </header>
+
+  <section class="hero">
+    <h2>Transforme sua mente. Inspire sua jornada.</h2>
+    <p>Conteúdo diário sobre filosofia, propósito e liberdade financeira.</p>
+  </section>
+
+  <section id="filosofia" class="section">
+    <h3>Filosofia Clássica</h3>
+    <p>Aprenda com os maiores pensadores da história: Sócrates, Platão, Aristóteles, Sêneca, Marco Aurélio e outros. Descubra como aplicar a sabedoria antiga na sua vida moderna para tomar melhores decisões, ter mais autocontrole e viver com propósito.</p>
+  </section>
+
+  <section id="empreendedorismo" class="section">
+    <h3>Empreendedorismo Digital</h3>
+    <p>Receba dicas práticas de como construir uma carreira sólida na internet. Desde marketing digital até criação de infoprodutos e renda em dólar. Você será guiado rumo à independência financeira com princípios sólidos e estratégias comprovadas.</p>
+  </section>
+
+  <section id="canal" class="section">
+    <h3>Junte-se ao Canal</h3>
+    <p>Já somos milhares de homens que escolheram dominar a si mesmos antes de dominar o mundo. Inscreva-se agora no canal do YouTube e comece sua transformação!</p>
+    <div class="cta">
+      <button onclick="inscrever()">Inscreva-se Agora</button>
+    </div>
+  </section>
+
+  <footer>
+    © 2025 Motivação Sigma. Todos os direitos reservados.
+  </footer>
+
+  <script>
+    function inscrever() {
+      window.open("https://www.youtube.com/@MotivacaoSigma", "_blank");
+    }
+  </script>
+
+</body>
+</html>

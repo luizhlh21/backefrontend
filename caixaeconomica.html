@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Caixa Econômica Federal - Réplica</title>
+  <style>
+    body {
+      margin: 0;
+      font-family: Arial, sans-serif;
+    }
+
+    header {
+      background-color: #005ca9;
+      padding: 15px 30px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      color: white;
+    }
+
+    header img {
+      height: 40px;
+    }
+
+    nav a {
+      margin-left: 20px;
+      text-decoration: none;
+      color: white;
+      font-weight: bold;
+    }
+
+    .banner {
+      background: url('https://www.caixa.gov.br/PublishingImages/caixa-banner.jpg') no-repeat center center;
+      background-size: cover;
+      height: 300px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: white;
+      text-shadow: 1px 1px 4px black;
+      font-size: 2em;
+      font-weight: bold;
+    }
+
+    .services {
+      padding: 40px 20px;
+      text-align: center;
+    }
+
+    .services h2 {
+      color: #005ca9;
+    }
+
+    .service-buttons {
+      margin-top: 20px;
+      display: flex;
+      justify-content: center;
+      flex-wrap: wrap;
+      gap: 15px;
+    }
+
+    .service-buttons button {
+      background-color: #f68b1f;
+      border: none;
+      padding: 15px 25px;
+      color: white;
+      font-size: 16px;
+      border-radius: 5px;
+      cursor: pointer;
+      transition: background 0.3s;
+    }
+
+    .service-buttons button:hover {
+      background-color: #e57900;
+    }
+
+    footer {
+      background-color: #003366;
+      color: white;
+      text-align: center;
+      padding: 20px;
+      margin-top: 40px;
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <img src="https://logodownload.org/wp-content/uploads/2014/10/caixa-economica-federal-logo.png" alt="Logo Caixa" />
+    <nav>
+      <a href="#">Para Você</a>
+      <a href="#">Para Empresas</a>
+      <a href="#">Governo</a>
+      <a href="#">Ajuda</a>
+    </nav>
+  </header>
+
+  <section class="banner">
+    Bem-vindo à Caixa
+  </section>
+
+  <section class="services">
+    <h2>Serviços Rápidos</h2>
+    <div class="service-buttons">
+      <button onclick="acessarServico('FGTS')">FGTS</button>
+      <button onclick="acessarServico('Poupança')">Poupança</button>
+      <button onclick="acessarServico('Habitação')">Habitação</button>
+      <button onclick="acessarServico('Bolsa Família')">Bolsa Família</button>
+    </div>
+  </section>
+
+  <footer>
+    © 2025 Caixa Econômica Federal - Todos os direitos reservados.
+  </footer>
+
+  <script>
+    function acessarServico(servico) {
+      alert("Você clicou no serviço: " + servico);
+    }
+  </script>
+</body>
+</html>
