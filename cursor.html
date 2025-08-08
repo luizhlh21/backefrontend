@@ -1,0 +1,234 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Cursor Animado</title>
+  <style>
+    /* reset básico */
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    html,body { height: 100%; background: linear-gradient(135deg,#0f172a,#0b1220); color: #e6eef8; font-family: Inter, system-ui, sans-serif; -webkit-font-smoothing:antialiased; }
+
+    /* esconder cursor default */
+    html.has-custom-cursor, body.has-custom-cursor { cursor: none; }
+
+    /* estrutura da página */
+    .wrap {
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 2rem;
+      flex-direction: column;
+      padding: 3rem;
+      text-align: center;
+    }
+    h1 { font-size: 2rem; margin-bottom: .5rem; letter-spacing: .4px; }
+    p { color: rgba(230,238,248,.8); max-width: 700px; }
+
+    /* alguns elementos para testar hover */
+    .buttons { display: flex; gap: 1rem; margin-top: 1.5rem; flex-wrap: wrap; justify-content: center; }
+    .btn {
+      background: linear-gradient(90deg, rgba(255,255,255,0.06), rgba(255,255,255,0.03));
+      border: 1px solid rgba(255,255,255,0.06);
+      padding: .7rem 1.1rem;
+      border-radius: 12px;
+      color: #e6eef8;
+      text-decoration: none;
+      transition: transform .18s ease, box-shadow .18s;
+      display: inline-flex; align-items:center; gap:.5rem;
+    }
+    .btn:hover { transform: translateY(-4px); box-shadow: 0 8px 30px rgba(2,6,23,.55); }
+
+    /* CURSOR: ponto central (cursor) e anel externo (ring) */
+    .cursor-dot, .cursor-ring {
+      position: fixed;
+      pointer-events: none;
+      left: 0; top: 0;
+      transform: translate(-50%, -50%);
+      z-index: 9999;
+      mix-blend-mode: normal;
+      transition: opacity .18s ease;
+    }
+
+    .cursor-dot {
+      width: 10px;
+      height: 10px;
+      background: radial-gradient(circle at 30% 30%, #ffffff, #a8d0ff 60%);
+      border-radius: 50%;
+      box-shadow: 0 6px 16px rgba(8,12,30,.6), inset 0 1px 2px rgba(255,255,255,.15);
+      transform-origin: center;
+    }
+
+    .cursor-ring {
+      width: 46px;
+      height: 46px;
+      border-radius: 50%;
+      border: 2px solid rgba(168,208,255,.18);
+      backdrop-filter: blur(2px);
+      transform-origin: center;
+      transition: width .18s ease, height .18s ease, border-color .18s ease, opacity .18s ease;
+    }
+
+    /* estado quando for hover em elemento interativo */
+    .cursor--hover .cursor-dot { transform: scale(1.6); }
+    .cursor--hover .cursor-ring { width: 70px; height: 70px; border-color: rgba(168,208,255,.35); }
+
+    /* clique: ripple */
+    .cursor-ripple {
+      position: fixed;
+      pointer-events: none;
+      border-radius: 50%;
+      transform: translate(-50%,-50%) scale(0);
+      opacity: .9;
+      z-index: 9998;
+      border: 2px solid rgba(255,255,255,.14);
+      background: radial-gradient(circle at 40% 30%, rgba(168,208,255,.12), rgba(255,255,255,0));
+      transition: transform .6s cubic-bezier(.2,.9,.2,1), opacity .6s ease;
+    }
+
+    /* pequeno layout extra para demo */
+    footer { margin-top: 2rem; opacity: .6; font-size: .9rem; }
+    a { color: #9bd0ff; text-decoration: underline 1px; }
+    @media (prefers-reduced-motion: reduce) {
+      .cursor-ring, .cursor-dot, .cursor-ripple { transition: none !important; animation: none !important; }
+    }
+  </style>
+</head>
+<body class="has-custom-cursor">
+  <div class="wrap">
+    <h1>Cursor Animado — Exemplo</h1>
+    <p>Este cursor substitui o padrão por um ponto central e um anel suave que segue o mouse. Passe o ponteiro sobre botões/links para expandir o anel. Clique para ver um ripple.</p>
+
+    <div class="buttons" aria-hidden="true">
+      <a class="btn" href="#">Botão 1</a>
+      <a class="btn" href="#">Botão 2</a>
+      <a class="btn" href="#">Botão 3</a>
+      <a class="btn" href="#">Botão 4</a>
+    </div>
+
+    <footer>Clique em qualquer lugar da página para ver o efeito de clique.</footer>
+  </div>
+
+  <!-- elementos do cursor -->
+  <div class="cursor-dot" id="cursorDot"></div>
+  <div class="cursor-ring" id="cursorRing"></div>
+
+  <script>
+    (function(){
+      const html = document.documentElement;
+      // só aplica se dispositivo tiver cursor (não em touch devices)
+      const isTouch = 'ontouchstart' in window || navigator.maxTouchPoints > 0;
+      if (isTouch) {
+        // em dispositivos touch, não escondemos o cursor — remove a classe e elementos
+        document.body.classList.remove('has-custom-cursor');
+        document.getElementById('cursorDot').remove();
+        document.getElementById('cursorRing').remove();
+        return;
+      }
+
+      html.classList.add('has-custom-cursor');
+
+      const dot = document.getElementById('cursorDot');
+      const ring = document.getElementById('cursorRing');
+      let mouseX = window.innerWidth/2, mouseY = window.innerHeight/2;
+      let ringX = mouseX, ringY = mouseY;
+      let lastMoveAt = Date.now();
+
+      // suavidade do anel
+      const ease = 0.18;
+
+      // atualiza coords ao mover mouse
+      window.addEventListener('mousemove', (e) => {
+        mouseX = e.clientX;
+        mouseY = e.clientY;
+        lastMoveAt = Date.now();
+        dot.style.opacity = '1';
+        ring.style.opacity = '1';
+      });
+
+      // mantém o cursor central sempre no topo com animação suave do ring
+      function render() {
+        // mover dot imediatamente (pequena suavização opcional)
+        dot.style.transform = `translate(${mouseX - 0}px, ${mouseY - 0}px) translate(-50%, -50%)`;
+
+        // suavizar movimento do ring
+        ringX += (mouseX - ringX) * ease;
+        ringY += (mouseY - ringY) * ease;
+        ring.style.transform = `translate(${ringX}px, ${ringY}px) translate(-50%, -50%)`;
+
+        // reduzir opacidade se parou de mover
+        if (Date.now() - lastMoveAt > 2500) {
+          dot.style.opacity = '0.12';
+          ring.style.opacity = '0.06';
+        }
+
+        requestAnimationFrame(render);
+      }
+      requestAnimationFrame(render);
+
+      // detectar hover em elementos interativos
+      const hoverSelectors = 'a, button, input, textarea, select, .btn, [data-cursor="hover"]';
+      document.querySelectorAll(hoverSelectors).forEach(el => {
+        el.addEventListener('mouseenter', () => document.body.classList.add('cursor--hover'));
+        el.addEventListener('mouseleave', () => document.body.classList.remove('cursor--hover'));
+      });
+
+      // clique: ripple
+      window.addEventListener('mousedown', (e) => {
+        createRipple(e.clientX, e.clientY);
+        // pequena escala do dot para feedback tátil
+        dot.style.transition = 'transform .12s ease';
+        dot.style.transform += ' scale(0.7)';
+      });
+      window.addEventListener('mouseup', () => {
+        dot.style.transition = 'transform .2s cubic-bezier(.2,.9,.2,1)';
+        dot.style.transform = dot.style.transform.replace(' scale(0.7)','');
+      });
+
+      function createRipple(x,y){
+        const ripple = document.createElement('div');
+        ripple.className = 'cursor-ripple';
+        const size = Math.max(80, Math.min(220, Math.hypot(window.innerWidth, window.innerHeight) * 0.06));
+        ripple.style.width = ripple.style.height = size + 'px';
+        ripple.style.left = x + 'px';
+        ripple.style.top = y + 'px';
+        document.body.appendChild(ripple);
+
+        // forçar frame para pegar transition
+        requestAnimationFrame(() => {
+          ripple.style.transform = 'translate(-50%,-50%) scale(1)';
+          ripple.style.opacity = '0';
+        });
+
+        // remover depois da animação
+        setTimeout(() => ripple.remove(), 700);
+      }
+
+      // quando a janela ficar fora de foco, suaviza cursor
+      window.addEventListener('blur', () => {
+        dot.style.opacity = '0.12';
+        ring.style.opacity = '0.06';
+      });
+      window.addEventListener('focus', () => {
+        dot.style.opacity = '1';
+        ring.style.opacity = '1';
+      });
+
+      // acessibilidade: permitir desativar via tecla "c"
+      let enabled = true;
+      window.addEventListener('keydown', (e) => {
+        if (e.key.toLowerCase() === 'c') {
+          enabled = !enabled;
+          if (!enabled) {
+            document.body.classList.remove('has-custom-cursor');
+            dot.remove(); ring.remove();
+          } else {
+            location.reload();
+          }
+        }
+      });
+    })();
+  </script>
+</body>
+</html>

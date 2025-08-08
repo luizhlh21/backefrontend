@@ -1,0 +1,378 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>Ping Pong - Jogo Básico</title>
+<style>
+  :root{
+    --bg:#0b1220;
+    --accent:#38bdf8;
+    --muted:#94a3b8;
+  }
+  *{box-sizing:border-box}
+  html,body{height:100%;margin:0;font-family:Inter,system-ui,Segoe UI,Roboto,Arial;}
+  body{
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    background:linear-gradient(180deg,var(--bg),#071025);
+    color:#e6eef7;
+    padding:20px;
+  }
+  .wrap{
+    width:900px;
+    max-width:98vw;
+    background:rgba(255,255,255,0.02);
+    border-radius:12px;
+    padding:18px;
+    box-shadow:0 8px 30px rgba(2,6,23,0.7);
+  }
+  header{
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    gap:12px;
+    margin-bottom:12px;
+  }
+  h1{font-size:18px;margin:0}
+  .controls{display:flex;gap:8px;align-items:center}
+  button{
+    background:transparent;border:1px solid rgba(255,255,255,0.08);
+    color:var(--muted);padding:8px 10px;border-radius:8px;cursor:pointer;
+  }
+  button:hover{border-color:var(--accent);color:var(--accent)}
+  canvas{
+    display:block;
+    width:100%;
+    height:500px;
+    background:linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01));
+    border-radius:8px;
+  }
+  .footer{
+    margin-top:10px;
+    display:flex;
+    justify-content:space-between;
+    color:var(--muted);
+    font-size:13px;
+  }
+  .kbd{font-weight:600;color:var(--accent)}
+  @media (max-width:600px){
+    canvas{height:380px}
+    h1{font-size:16px}
+  }
+</style>
+</head>
+<body>
+  <div class="wrap">
+    <header>
+      <h1>Ping Pong — Jogo Básico</h1>
+      <div class="controls">
+        <label for="maxScore">Pontos para vencer:</label>
+        <select id="maxScore">
+          <option value="3">3</option>
+          <option value="5" selected>5</option>
+          <option value="10">10</option>
+        </select>
+        <button id="startBtn">Iniciar / Pausar</button>
+        <button id="resetBtn">Reiniciar</button>
+      </div>
+    </header>
+
+    <canvas id="game"></canvas>
+
+    <div class="footer">
+      <div>
+        Jogador (esquerda): <span id="scoreLeft">0</span>
+        —
+        Computador (direita): <span id="scoreRight">0</span>
+      </div>
+      <div>
+        Controles: <span class="kbd">W / S</span> (esquerda) • <span class="kbd">↑ / ↓</span> (direita)
+      </div>
+    </div>
+  </div>
+
+<script>
+/* ======= Configurações iniciais ======= */
+const canvas = document.getElementById('game');
+const ctx = canvas.getContext('2d');
+
+let DPR = window.devicePixelRatio || 1;
+function fitCanvas(){
+  // ajusta resolução e dimensão
+  const rect = canvas.getBoundingClientRect();
+  canvas.width = Math.floor(rect.width * DPR);
+  canvas.height = Math.floor(rect.height * DPR);
+  ctx.setTransform(DPR, 0, 0, DPR, 0, 0);
+}
+fitCanvas();
+window.addEventListener('resize', () => { fitCanvas(); draw(); });
+
+/* ======= Estado do jogo ======= */
+const state = {
+  running: false,
+  scoreLeft: 0,
+  scoreRight: 0,
+  maxScore: parseInt(document.getElementById('maxScore').value,10),
+};
+
+/* ======= Objetos do jogo ======= */
+const game = {
+  width: () => canvas.clientWidth,
+  height: () => canvas.clientHeight,
+  paddleWidth: 12,
+  paddleHeight: 100,
+  ballSize: 12,
+};
+
+const leftPaddle = {
+  x: 10,
+  y: 50,
+  speed: 6,
+  moveUp: false,
+  moveDown: false,
+};
+
+const rightPaddle = {
+  x: null, // calculado
+  y: 50,
+  speed: 5,
+};
+
+const ball = {
+  x: null,
+  y: null,
+  vx: 0,
+  vy: 0,
+  speed: 5,
+};
+
+/* ======= Funções utilitárias ======= */
+function resetPositions(servingToRight = true){
+  leftPaddle.y = (game.height() - game.paddleHeight) / 2;
+  rightPaddle.x = game.width() - game.paddleWidth - 10;
+  rightPaddle.y = (game.height() - game.paddleHeight) / 2;
+  ball.x = game.width() / 2;
+  ball.y = game.height() / 2;
+  const angle = (Math.random() * Math.PI / 4) - (Math.PI/8); // pequeno ângulo
+  const dir = servingToRight ? 1 : -1;
+  ball.vx = dir * ball.speed * Math.cos(angle);
+  ball.vy = ball.speed * Math.sin(angle);
+}
+
+/* ======= Entrada do jogador ======= */
+document.addEventListener('keydown', (e) => {
+  if (e.key === 'w' || e.key === 'W') leftPaddle.moveUp = true;
+  if (e.key === 's' || e.key === 'S') leftPaddle.moveDown = true;
+  if (e.key === 'ArrowUp') rightPaddle.moveUp = true;
+  if (e.key === 'ArrowDown') rightPaddle.moveDown = true;
+  // espaço para pausar
+  if (e.code === 'Space') toggleRunning();
+});
+document.addEventListener('keyup', (e) => {
+  if (e.key === 'w' || e.key === 'W') leftPaddle.moveUp = false;
+  if (e.key === 's' || e.key === 'S') leftPaddle.moveDown = false;
+  if (e.key === 'ArrowUp') rightPaddle.moveUp = false;
+  if (e.key === 'ArrowDown') rightPaddle.moveDown = false;
+});
+
+/* ======= UI Buttons ======= */
+const startBtn = document.getElementById('startBtn');
+const resetBtn = document.getElementById('resetBtn');
+const maxScoreSelect = document.getElementById('maxScore');
+const scoreLeftEl = document.getElementById('scoreLeft');
+const scoreRightEl = document.getElementById('scoreRight');
+
+startBtn.addEventListener('click', toggleRunning);
+resetBtn.addEventListener('click', resetGame);
+maxScoreSelect.addEventListener('change', () => {
+  state.maxScore = parseInt(maxScoreSelect.value,10);
+});
+
+function toggleRunning(){
+  state.running = !state.running;
+  startBtn.textContent = state.running ? 'Pausar' : 'Iniciar';
+  if(state.running) lastTime = performance.now(); // para evitar salto no dt
+}
+
+/* ======= Lógica do jogo ======= */
+let lastTime = 0;
+function update(dt){
+  // paddles jogador (esquerda)
+  if (leftPaddle.moveUp) leftPaddle.y -= leftPaddle.speed;
+  if (leftPaddle.moveDown) leftPaddle.y += leftPaddle.speed;
+  // limita dentro da tela
+  leftPaddle.y = Math.max(0, Math.min(game.height() - game.paddleHeight, leftPaddle.y));
+
+  // IA / ou controles direita (se user usar setas)
+  if (rightPaddle.moveUp) rightPaddle.y -= rightPaddle.speed;
+  if (rightPaddle.moveDown) rightPaddle.y += rightPaddle.speed;
+  // simples IA quando jogador não controla (segue bola)
+  if (!rightPaddle.moveUp && !rightPaddle.moveDown){
+    const center = rightPaddle.y + game.paddleHeight/2;
+    if (ball.y < center - 10) rightPaddle.y -= rightPaddle.speed * 0.9;
+    else if (ball.y > center + 10) rightPaddle.y += rightPaddle.speed * 0.9;
+  }
+  rightPaddle.y = Math.max(0, Math.min(game.height() - game.paddleHeight, rightPaddle.y));
+
+  // movimento da bola
+  ball.x += ball.vx * (dt/16.67);
+  ball.y += ball.vy * (dt/16.67);
+
+  // colidir com topo/baixo
+  if (ball.y <= 0){
+    ball.y = 0;
+    ball.vy *= -1;
+  } else if (ball.y + game.ballSize >= game.height()){
+    ball.y = game.height() - game.ballSize;
+    ball.vy *= -1;
+  }
+
+  // colisão com paddles
+  // esquerda
+  if (ball.x <= leftPaddle.x + game.paddleWidth &&
+      ball.x >= leftPaddle.x &&
+      ball.y + game.ballSize >= leftPaddle.y &&
+      ball.y <= leftPaddle.y + game.paddleHeight){
+    // calcular ângulo baseado na posição de impacto
+    const relativeY = (leftPaddle.y + game.paddleHeight/2) - (ball.y + game.ballSize/2);
+    const normalized = relativeY / (game.paddleHeight/2);
+    const bounceAngle = normalized * (Math.PI / 3); // até 60 graus
+    const speed = Math.hypot(ball.vx, ball.vy) * 1.05; // acelera um pouco
+    ball.vx = Math.abs(speed * Math.cos(bounceAngle));
+    ball.vy = -speed * Math.sin(bounceAngle);
+    ball.x = leftPaddle.x + game.paddleWidth + 0.1;
+  }
+
+  // direita
+  if (ball.x + game.ballSize >= rightPaddle.x &&
+      ball.x + game.ballSize <= rightPaddle.x + game.paddleWidth &&
+      ball.y + game.ballSize >= rightPaddle.y &&
+      ball.y <= rightPaddle.y + game.paddleHeight){
+    const relativeY = (rightPaddle.y + game.paddleHeight/2) - (ball.y + game.ballSize/2);
+    const normalized = relativeY / (game.paddleHeight/2);
+    const bounceAngle = normalized * (Math.PI / 3);
+    const speed = Math.hypot(ball.vx, ball.vy) * 1.05;
+    ball.vx = -Math.abs(speed * Math.cos(bounceAngle));
+    ball.vy = -speed * Math.sin(bounceAngle);
+    ball.x = rightPaddle.x - game.ballSize - 0.1;
+  }
+
+  // marcar ponto (fora da tela)
+  if (ball.x < -50){
+    state.scoreRight += 1;
+    updateScoreUI();
+    checkGameOver();
+    resetPositions(true);
+    state.running = false; startBtn.textContent = 'Iniciar';
+  } else if (ball.x > game.width() + 50){
+    state.scoreLeft += 1;
+    updateScoreUI();
+    checkGameOver();
+    resetPositions(false);
+    state.running = false; startBtn.textContent = 'Iniciar';
+  }
+}
+
+function checkGameOver(){
+  if (state.scoreLeft >= state.maxScore || state.scoreRight >= state.maxScore){
+    const winner = state.scoreLeft > state.scoreRight ? 'Jogador (esquerda)' : 'Computador (direita)';
+    alert('Fim de jogo! Vencedor: ' + winner);
+    // poderíamos reiniciar automaticamente ou deixar o usuário reiniciar
+  }
+}
+
+/* ======= Desenho ======= */
+function clear(){
+  ctx.clearRect(0,0,game.width(),game.height());
+}
+
+function drawNet(){
+  const seg = 12;
+  const gap = 8;
+  ctx.fillStyle = 'rgba(255,255,255,0.06)';
+  const x = game.width()/2 - 1;
+  for(let y=0;y<game.height();y += seg + gap){
+    ctx.fillRect(x, y, 2, seg);
+  }
+}
+
+function draw(){
+  clear();
+  // fundo suave
+  ctx.fillStyle = 'rgba(255,255,255,0.01)';
+  ctx.fillRect(0,0,game.width(),game.height());
+
+  // rede
+  drawNet();
+
+  // paddles
+  ctx.fillStyle = '#cfeeff';
+  ctx.fillRect(leftPaddle.x, leftPaddle.y, game.paddleWidth, game.paddleHeight);
+  ctx.fillRect(rightPaddle.x, rightPaddle.y, game.paddleWidth, game.paddleHeight);
+
+  // bola
+  ctx.fillStyle = '#38bdf8';
+  ctx.fillRect(ball.x, ball.y, game.ballSize, game.ballSize);
+
+  // scores (no topo)
+  ctx.font = '20px Inter, Arial';
+  ctx.fillStyle = 'rgba(255,255,255,0.85)';
+  ctx.textAlign = 'center';
+  ctx.fillText(state.scoreLeft, game.width()*0.25, 30);
+  ctx.fillText(state.scoreRight, game.width()*0.75, 30);
+}
+
+/* ======= Loop principal ======= */
+function loop(timestamp){
+  if (!lastTime) lastTime = timestamp;
+  const dt = timestamp - lastTime;
+  lastTime = timestamp;
+
+  if (state.running){
+    update(dt);
+  }
+  draw();
+  requestAnimationFrame(loop);
+}
+
+/* ======= Inicialização ======= */
+function updateScoreUI(){
+  scoreLeftEl.textContent = state.scoreLeft;
+  scoreRightEl.textContent = state.scoreRight;
+}
+
+function resetGame(){
+  state.scoreLeft = 0;
+  state.scoreRight = 0;
+  updateScoreUI();
+  state.running = false;
+  startBtn.textContent = 'Iniciar';
+  resetPositions(Math.random() >= 0.5);
+  draw();
+}
+
+window.addEventListener('load', () => {
+  // definir dimensões e posições iniciais
+  fitCanvas();
+  resetPositions(true);
+  draw();
+  requestAnimationFrame(loop);
+});
+
+// garante bola e paddles escalem quando canvas for redimensionado
+const resizeObserver = new ResizeObserver(() => {
+  fitCanvas();
+  // mantém posições relativas
+  leftPaddle.y = Math.min(leftPaddle.y, game.height() - game.paddleHeight);
+  rightPaddle.x = game.width() - game.paddleWidth - 10;
+  rightPaddle.y = Math.min(rightPaddle.y, game.height() - game.paddleHeight);
+  ball.x = Math.min(ball.x, game.width() - game.ballSize);
+  ball.y = Math.min(ball.y, game.height() - game.ballSize);
+  draw();
+});
+resizeObserver.observe(canvas);
+</script>
+</body>
+</html>

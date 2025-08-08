@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Mini RPG</title>
+<style>
+    body {
+        font-family: Arial, sans-serif;
+        background-color: #222;
+        color: white;
+        text-align: center;
+        padding: 20px;
+    }
+    h1 {
+        color: gold;
+    }
+    .status {
+        display: flex;
+        justify-content: space-around;
+        margin: 20px 0;
+        flex-wrap: wrap;
+    }
+    .card {
+        background-color: #333;
+        padding: 15px;
+        border-radius: 10px;
+        width: 200px;
+    }
+    .life-bar {
+        background-color: #555;
+        height: 20px;
+        border-radius: 10px;
+        overflow: hidden;
+        margin-top: 10px;
+    }
+    .life {
+        background-color: red;
+        height: 100%;
+        width: 100%;
+        transition: width 0.3s;
+    }
+    button {
+        padding: 10px 20px;
+        margin: 10px;
+        background-color: gold;
+        border: none;
+        border-radius: 5px;
+        cursor: pointer;
+        font-weight: bold;
+    }
+    button:hover {
+        background-color: orange;
+    }
+    #log {
+        background-color: #111;
+        padding: 10px;
+        border-radius: 10px;
+        max-height: 200px;
+        overflow-y: auto;
+        margin-top: 20px;
+    }
+</style>
+</head>
+<body>
+
+<h1>⚔ Mini RPG ⚔</h1>
+
+<div class="status">
+    <div class="card">
+        <h2>Herói 🧝</h2>
+        <p>HP: <span id="player-hp">100</span></p>
+        <div class="life-bar"><div id="player-life" class="life"></div></div>
+    </div>
+    <div class="card">
+        <h2>Monstro 🐉</h2>
+        <p>HP: <span id="enemy-hp">100</span></p>
+        <div class="life-bar"><div id="enemy-life" class="life"></div></div>
+    </div>
+</div>
+
+<div>
+    <button onclick="attack()">⚔ Atacar</button>
+    <button onclick="heal()">💖 Curar</button>
+</div>
+
+<div id="log"></div>
+
+<script>
+    let playerHP = 100;
+    let enemyHP = 100;
+
+    function updateUI() {
+        document.getElementById("player-hp").innerText = playerHP;
+        document.getElementById("enemy-hp").innerText = enemyHP;
+        document.getElementById("player-life").style.width = playerHP + "%";
+        document.getElementById("enemy-life").style.width = enemyHP + "%";
+    }
+
+    function logMessage(message) {
+        let log = document.getElementById("log");
+        log.innerHTML = message + "<br>" + log.innerHTML;
+    }
+
+    function attack() {
+        if (playerHP <= 0 || enemyHP <= 0) return;
+
+        let damageToEnemy = Math.floor(Math.random() * 20) + 5;
+        let damageToPlayer = Math.floor(Math.random() * 15) + 5;
+
+        enemyHP -= damageToEnemy;
+        if (enemyHP < 0) enemyHP = 0;
+        logMessage(`💥 Você causou ${damageToEnemy} de dano ao monstro!`);
+
+        if (enemyHP > 0) {
+            playerHP -= damageToPlayer;
+            if (playerHP < 0) playerHP = 0;
+            logMessage(`🐉 O monstro causou ${damageToPlayer} de dano a você!`);
+        }
+
+        checkWinner();
+        updateUI();
+    }
+
+    function heal() {
+        if (playerHP <= 0 || enemyHP <= 0) return;
+
+        let healAmount = Math.floor(Math.random() * 20) + 10;
+        playerHP += healAmount;
+        if (playerHP > 100) playerHP = 100;
+        logMessage(`💖 Você se curou em ${healAmount} pontos de vida!`);
+
+        let damageToPlayer = Math.floor(Math.random() * 10) + 5;
+        playerHP -= damageToPlayer;
+        if (playerHP < 0) playerHP = 0;
+        logMessage(`🐉 O monstro atacou e causou ${damageToPlayer} de dano!`);
+
+        checkWinner();
+        updateUI();
+    }
+
+    function checkWinner() {
+        if (enemyHP <= 0) {
+            logMessage("🏆 Você derrotou o monstro!");
+        } else if (playerHP <= 0) {
+            logMessage("💀 Você foi derrotado pelo monstro...");
+        }
+    }
+
+    updateUI();
+</script>
+
+</body>
+</html>

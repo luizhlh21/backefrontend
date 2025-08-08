@@ -1,0 +1,271 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Tela de Login Responsiva</title>
+  <style>
+    /* Reset simples */
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    html,body { height: 100%; font-family: Inter, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial; background: linear-gradient(135deg,#0f172a 0%, #0b1220 100%); color:#e6eef8; }
+
+    /* Container central */
+    .wrap {
+      min-height: 100%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 24px;
+    }
+
+    .card {
+      width: 420px;
+      max-width: 100%;
+      background: linear-gradient(180deg, rgba(255,255,255,0.04), rgba(255,255,255,0.02));
+      border: 1px solid rgba(255,255,255,0.05);
+      border-radius: 14px;
+      padding: 28px;
+      box-shadow: 0 8px 30px rgba(2,6,23,0.6);
+      backdrop-filter: blur(6px);
+    }
+
+    .brand {
+      display:flex;
+      align-items:center;
+      gap:12px;
+      margin-bottom: 18px;
+    }
+    .logo {
+      width:48px;height:48px;border-radius:10px;
+      background:linear-gradient(135deg,#6ee7b7,#60a5fa);
+      display:flex;align-items:center;justify-content:center;font-weight:700;color:#062024;
+      box-shadow:0 6px 18px rgba(6,32,36,0.3);
+    }
+    h1 { font-size:1.25rem; letter-spacing: -0.01em; margin-bottom:4px; }
+    p.lead { font-size:0.9rem; color: rgba(230,238,248,0.75); margin-bottom:16px; }
+
+    form { display:flex; flex-direction:column; gap:12px; }
+
+    .field {
+      display:flex; flex-direction:column; gap:6px;
+    }
+    label { font-size:0.8rem; color: rgba(230,238,248,0.85); }
+    input[type="email"], input[type="password"], input[type="text"] {
+      width:100%; padding:12px 12px; border-radius:8px; border:1px solid rgba(255,255,255,0.06);
+      background: rgba(255,255,255,0.02); color: #e6eef8; font-size:0.95rem;
+      outline: none; transition: box-shadow .15s, transform .08s;
+    }
+    input:focus { box-shadow: 0 6px 20px rgba(10,20,40,0.45); transform: translateY(-1px); border-color: rgba(96,165,250,0.22); }
+
+    .row { display:flex; gap:8px; align-items:center; justify-content:space-between; }
+    .checkbox { display:flex; gap:8px; align-items:center; color: rgba(230,238,248,0.8); font-size:0.9rem; }
+    .link { color: #9ac0ff; text-decoration:none; font-size:0.9rem; }
+    .link:hover { text-decoration:underline; }
+
+    .btn {
+      margin-top:6px;
+      background: linear-gradient(90deg,#60a5fa,#7c3aed);
+      border:none; color:white; padding:12px; border-radius:10px; font-weight:600; cursor:pointer; font-size:1rem;
+      box-shadow: 0 8px 30px rgba(124,58,237,0.12);
+      transition: transform .08s, opacity .12s;
+    }
+    .btn:active { transform: translateY(1px) scale(.998); }
+    .btn[disabled] { opacity:0.45; cursor:not-allowed; box-shadow:none; transform:none; }
+
+    .small { font-size:0.82rem; color: rgba(230,238,248,0.7); margin-top:8px; text-align:center; }
+
+    /* password visibility control */
+    .pw-row { position:relative; }
+    .toggle-pw {
+      position:absolute; right:10px; top:50%; transform:translateY(-50%); background:none; border:none; color:rgba(230,238,248,0.7); cursor:pointer; font-weight:600;
+    }
+
+    /* success placeholder */
+    .or { text-align:center; color: rgba(230,238,248,0.45); font-size:0.82rem; margin:8px 0; }
+
+    /* toast / modal message */
+    .toast {
+      position: fixed;
+      left: 50%;
+      transform: translateX(-50%) translateY(20px);
+      bottom: 28px;
+      background: linear-gradient(90deg,#0f172a,#071029);
+      color: #dff6ff;
+      padding:14px 18px;
+      border-radius: 10px;
+      border:1px solid rgba(96,165,250,0.12);
+      box-shadow: 0 10px 30px rgba(2,6,23,0.6);
+      opacity:0;
+      pointer-events:none;
+      transition: opacity .22s, transform .28s;
+      z-index: 2000;
+      min-width: 260px;
+      text-align:center;
+    }
+    .toast.show { opacity:1; transform: translateX(-50%) translateY(0); pointer-events:auto; }
+
+    /* small screen tweaks */
+    @media (max-width:420px) {
+      .card { padding:20px; border-radius:12px; }
+      .brand h1 { font-size:1.05rem; }
+      .logo { width:44px;height:44px; }
+    }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <div class="card" role="region" aria-label="Área de login">
+      <div class="brand">
+        <div class="logo" aria-hidden="true">MS</div>
+        <div>
+          <h1>Entrar — Motivação Sigma</h1>
+          <p class="lead">Acesse sua conta para continuar — mantenha o foco e a disciplina.</p>
+        </div>
+      </div>
+
+      <form id="loginForm" novalidate>
+        <div class="field">
+          <label for="email">E-mail</label>
+          <input id="email" name="email" type="email" autocomplete="email" placeholder="seu@exemplo.com" required />
+          <div id="emailError" class="error" style="color:#ffb4b4;font-size:0.85rem;display:none;">Digite um e-mail válido.</div>
+        </div>
+
+        <div class="field pw-row">
+          <label for="password">Senha</label>
+          <input id="password" name="password" type="password" autocomplete="current-password" placeholder="••••••••" minlength="6" required />
+          <button type="button" id="togglePw" class="toggle-pw" aria-label="Mostrar senha">Mostrar</button>
+          <div id="pwError" class="error" style="color:#ffb4b4;font-size:0.85rem;display:none;">Senha deve ter ao menos 6 caracteres.</div>
+        </div>
+
+        <div class="row" style="margin-top:2px;">
+          <label class="checkbox"><input id="remember" type="checkbox" /> Lembrar-me</label>
+          <a class="link" href="#" onclick="event.preventDefault(); alert('Fluxo de recuperação não implementado aqui.');">Esqueceu a senha?</a>
+        </div>
+
+        <button id="submitBtn" class="btn" type="submit" aria-disabled="true" disabled>Entrar</button>
+
+        <div class="small">Ainda não tem conta? <a href="#" class="link" onclick="event.preventDefault(); alert('Registro não implementado aqui.');">Criar conta</a></div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Toast de mensagem final -->
+  <div id="toast" class="toast" role="status" aria-live="polite"></div>
+
+  <script>
+    // Seletores
+    const form = document.getElementById('loginForm');
+    const email = document.getElementById('email');
+    const password = document.getElementById('password');
+    const submitBtn = document.getElementById('submitBtn');
+    const togglePw = document.getElementById('togglePw');
+    const toast = document.getElementById('toast');
+    const emailError = document.getElementById('emailError');
+    const pwError = document.getElementById('pwError');
+
+    // Validação simples de e-mail
+    function isValidEmail(v) {
+      // RegExp simples e segura para validação básica
+      return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v);
+    }
+
+    // Atualiza estado do botão com base nos campos
+    function updateButtonState() {
+      const okEmail = isValidEmail(email.value.trim());
+      const okPw = password.value.trim().length >= 6;
+      // show/hide inline errors dynamically (quando o usuário começa a digitar)
+      emailError.style.display = email.value.length > 0 && !okEmail ? 'block' : 'none';
+      pwError.style.display = password.value.length > 0 && !okPw ? 'block' : 'none';
+
+      if (okEmail && okPw) {
+        submitBtn.removeAttribute('disabled');
+        submitBtn.setAttribute('aria-disabled', 'false');
+      } else {
+        submitBtn.setAttribute('disabled', '');
+        submitBtn.setAttribute('aria-disabled', 'true');
+      }
+    }
+
+    // Toggle de visibilidade da senha
+    togglePw.addEventListener('click', () => {
+      if (password.type === 'password') {
+        password.type = 'text';
+        togglePw.textContent = 'Ocultar';
+        togglePw.setAttribute('aria-pressed','true');
+      } else {
+        password.type = 'password';
+        togglePw.textContent = 'Mostrar';
+        togglePw.setAttribute('aria-pressed','false');
+      }
+      password.focus();
+    });
+
+    // Eventos de input para validação ao digitar
+    email.addEventListener('input', updateButtonState);
+    password.addEventListener('input', updateButtonState);
+
+    // Submit do formulário
+    form.addEventListener('submit', (e) => {
+      e.preventDefault();
+
+      // Última checagem
+      const vEmail = email.value.trim();
+      const vPw = password.value.trim();
+      const remember = document.getElementById('remember').checked;
+
+      if (!isValidEmail(vEmail)) {
+        emailError.style.display = 'block';
+        email.focus();
+        return;
+      }
+      if (vPw.length < 6) {
+        pwError.style.display = 'block';
+        password.focus();
+        return;
+      }
+
+      // Desabilita botão para evitar múltiplos submits (simples UX)
+      submitBtn.setAttribute('disabled','');
+      submitBtn.textContent = 'Entrando...';
+
+      // Aqui normalmente faria uma requisição ao servidor. Simulamos resultado imediato:
+      showToast(`Bem-vindo${vEmail ? ', ' + vEmail.split('@')[0] : ''}! Login efetuado com sucesso.`);
+      
+      // Restaura botão em alguns instantes (simulação)
+      setTimeout(() => {
+        submitBtn.textContent = 'Entrar';
+        updateButtonState();
+      }, 1600);
+
+      // Se você quiser, pode limpar os campos após o login:
+      // form.reset();
+      // updateButtonState();
+    });
+
+    // Função para exibir toast (mensagem final)
+    function showToast(message, duration = 4000) {
+      toast.textContent = message;
+      toast.classList.add('show');
+      // Remover após duration
+      setTimeout(() => {
+        toast.classList.remove('show');
+      }, duration);
+    }
+
+    // Acessibilidade: submeter com Enter em qualquer campo
+    [email, password].forEach(el => {
+      el.addEventListener('keydown', (ev) => {
+        if (ev.key === 'Enter') {
+          // Se botão habilitado, submete
+          if (!submitBtn.hasAttribute('disabled')) {
+            form.requestSubmit();
+          }
+        }
+      });
+    });
+
+    // Inicia com estado correto
+    updateButtonState();
+  </script>
+</body>
+</html>

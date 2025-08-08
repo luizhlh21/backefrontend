@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Minecraft 2D</title>
+<style>
+    body {
+        margin: 0;
+        background-color: #87ceeb; /* Céu */
+        overflow: hidden;
+        font-family: sans-serif;
+    }
+    canvas {
+        display: block;
+        margin: 0 auto;
+        background-color: #87ceeb;
+        cursor: pointer;
+    }
+</style>
+</head>
+<body>
+
+<canvas id="gameCanvas"></canvas>
+
+<script>
+const canvas = document.getElementById("gameCanvas");
+const ctx = canvas.getContext("2d");
+
+canvas.width = window.innerWidth;
+canvas.height = window.innerHeight;
+
+const blockSize = 40; // Tamanho dos blocos
+const cols = Math.floor(canvas.width / blockSize);
+const rows = Math.floor(canvas.height / blockSize);
+
+let world = [];
+
+// Gera o mundo inicial
+for (let y = 0; y < rows; y++) {
+    let row = [];
+    for (let x = 0; x < cols; x++) {
+        if (y > rows / 2) {
+            row.push("dirt"); // Terra
+        } else if (y === Math.floor(rows / 2)) {
+            row.push("grass"); // Grama
+        } else {
+            row.push(null); // Vazio
+        }
+    }
+    world.push(row);
+}
+
+// Função para desenhar o mundo
+function drawWorld() {
+    for (let y = 0; y < rows; y++) {
+        for (let x = 0; x < cols; x++) {
+            let block = world[y][x];
+            if (block === "grass") {
+                ctx.fillStyle = "#228B22"; // Verde
+                ctx.fillRect(x * blockSize, y * blockSize, blockSize, blockSize);
+            }
+            if (block === "dirt") {
+                ctx.fillStyle = "#8B4513"; // Marrom
+                ctx.fillRect(x * blockSize, y * blockSize, blockSize, blockSize);
+            }
+        }
+    }
+}
+
+// Adicionar ou remover blocos ao clicar
+canvas.addEventListener("click", function(e) {
+    let mouseX = Math.floor(e.clientX / blockSize);
+    let mouseY = Math.floor(e.clientY / blockSize);
+
+    if (world[mouseY][mouseX] === null) {
+        world[mouseY][mouseX] = "dirt"; // Coloca bloco
+    } else {
+        world[mouseY][mouseX] = null; // Remove bloco
+    }
+    render();
+});
+
+function render() {
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    drawWorld();
+}
+
+render();
+</script>
+
+</body>
+</html>

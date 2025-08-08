@@ -1,0 +1,322 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>Dinossauro Clone</title>
+<style>
+  :root{
+    --bg:#f7f7f7;
+    --ground:#e0e0e0;
+    --text:#333;
+    --accent:#2b2b2b;
+  }
+  *{box-sizing:border-box}
+  html,body{height:100%;margin:0;font-family:Inter,system-ui,Arial,sans-serif;background:var(--bg);color:var(--text)}
+  .wrap{
+    display:flex;flex-direction:column;align-items:center;justify-content:center;height:100vh;gap:16px;padding:16px;
+  }
+  canvas{
+    background:linear-gradient(#fff,#fcfcfc);
+    border-radius:8px;
+    box-shadow:0 6px 20px rgba(0,0,0,0.08);
+    max-width:100%;width:800px;height:200px;
+    touch-action:none;
+  }
+  .hud{display:flex;justify-content:space-between;width:800px;max-width:100%;font-weight:600}
+  .hint{font-size:13px;color:#666}
+  .score{font-size:18px}
+  .controls{display:flex;gap:8px;align-items:center}
+  button{padding:8px 12px;border-radius:6px;border:1px solid #ddd;background:white;cursor:pointer}
+  button:active{transform:translateY(1px)}
+  .center{display:flex;align-items:center;gap:8px}
+  @media(max-width:500px){
+    canvas{height:160px}
+    .hud{width:100%}
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="hud">
+    <div class="center">
+      <div style="font-weight:700">Dino Clone</div>
+      <div class="hint" style="margin-left:12px">Pressione Espaço / Seta para cima / Toque para pular</div>
+    </div>
+    <div class="controls">
+      <div class="score">Pontuação: <span id="score">0</span></div>
+      <button id="restartBtn" title="Reiniciar">Reiniciar</button>
+    </div>
+  </div>
+
+  <canvas id="game" width="800" height="200" role="img" aria-label="Jogo estilo dinossauro"></canvas>
+  <div class="hint">Evite os cactos e aumente sua pontuação. A velocidade aumenta com o tempo.</div>
+</div>
+
+<script>
+(() => {
+  const canvas = document.getElementById('game');
+  const ctx = canvas.getContext('2d');
+  const scoreEl = document.getElementById('score');
+  const restartBtn = document.getElementById('restartBtn');
+
+  const W = canvas.width;
+  const H = canvas.height;
+
+  // Configs
+  const groundY = H - 30;
+  const gravity = 0.8;
+  const baseSpeed = 6;
+
+  let gameSpeed = baseSpeed;
+  let frame = 0;
+  let running = true;
+  let score = 0;
+  let highScore = 0;
+
+  // Dino (player)
+  const dino = {
+    x: 50,
+    y: groundY - 40,
+    w: 44,
+    h: 40,
+    vy: 0,
+    onGround: true,
+    jumpForce: -14,
+    update() {
+      this.vy += gravity;
+      this.y += this.vy;
+      if (this.y + this.h >= groundY) {
+        this.y = groundY - this.h;
+        this.vy = 0;
+        this.onGround = true;
+      } else {
+        this.onGround = false;
+      }
+    },
+    jump() {
+      if (this.onGround) {
+        this.vy = this.jumpForce;
+        this.onGround = false;
+      }
+    },
+    draw() {
+      // Simple dino: body + eye + leg
+      ctx.fillStyle = '#2b2b2b';
+      ctx.fillRect(this.x, this.y, this.w, this.h);
+      // eye
+      ctx.fillStyle = '#fff';
+      ctx.fillRect(this.x + this.w - 14, this.y + 8, 6, 6);
+      ctx.fillStyle = '#000';
+      ctx.fillRect(this.x + this.w - 12, this.y + 9, 2, 2);
+    }
+  };
+
+  // Obstacles
+  const obstacles = [];
+
+  function spawnObstacle() {
+    // Randomize width and height
+    const types = [
+      {w: 14, h: 30},
+      {w: 20, h: 38},
+      {w: 28, h: 46}
+    ];
+    const t = types[Math.floor(Math.random() * types.length)];
+    const o = {
+      x: W + 20,
+      y: groundY - t.h,
+      w: t.w,
+      h: t.h,
+      passed: false,
+      update() { this.x -= gameSpeed; },
+      draw() {
+        // draw cactus blocky
+        ctx.fillStyle = '#2b2b2b';
+        ctx.fillRect(this.x, this.y, this.w, this.h);
+        // small top
+        ctx.fillRect(this.x + this.w/4, this.y - 6, this.w/2, 6);
+      }
+    };
+    obstacles.push(o);
+  }
+
+  // Clouds (decorative)
+  const clouds = [];
+  function spawnCloud() {
+    const c = {
+      x: W + Math.random() * 200,
+      y: 20 + Math.random() * 60,
+      w: 40 + Math.random() * 40,
+      speed: 0.6 + Math.random() * 0.6,
+      update() { this.x -= this.speed; },
+      draw() {
+        ctx.fillStyle = '#ddd';
+        ctx.beginPath();
+        ctx.ellipse(this.x, this.y, this.w*0.6, this.w*0.35, 0, 0, Math.PI*2);
+        ctx.ellipse(this.x + this.w*0.4, this.y, this.w*0.5, this.w*0.3, 0, 0, Math.PI*2);
+        ctx.fill();
+      }
+    };
+    clouds.push(c);
+  }
+
+  // Ground pattern
+  function drawGround() {
+    ctx.fillStyle = '#e9e9e9';
+    ctx.fillRect(0, groundY, W, H - groundY);
+    // dashes
+    ctx.fillStyle = '#cfcfcf';
+    const dashW = 20;
+    for (let i = (frame % (dashW*2)); i < W; i += dashW*2) {
+      ctx.fillRect(i, groundY + 15, dashW, 4);
+    }
+  }
+
+  // Collision check
+  function collides(a, b) {
+    return !(a.x + a.w < b.x || a.x > b.x + b.w || a.y + a.h < b.y || a.y > b.y + b.h);
+  }
+
+  // Reset
+  function reset() {
+    obstacles.length = 0;
+    clouds.length = 0;
+    gameSpeed = baseSpeed;
+    frame = 0;
+    running = true;
+    score = 0;
+    dino.y = groundY - dino.h;
+    dino.vy = 0;
+    dino.onGround = true;
+  }
+
+  // Game over
+  function gameOver() {
+    running = false;
+    if (score > highScore) highScore = score;
+    // small flash / text
+    ctx.fillStyle = 'rgba(255,255,255,0.9)';
+    ctx.fillRect(0, 0, W, H);
+    ctx.fillStyle = '#2b2b2b';
+    ctx.font = '20px system-ui,Arial';
+    ctx.textAlign = 'center';
+    ctx.fillText('Você perdeu — Pressione Espaço ou clique para reiniciar', W/2, H/2 - 10);
+    ctx.font = '14px system-ui,Arial';
+    ctx.fillText('Pontuação: ' + score + '  ·  Recorde: ' + highScore, W/2, H/2 + 20);
+  }
+
+  // Main loop
+  let spawnTimer = 0;
+  let cloudTimer = 0;
+  function loop() {
+    frame++;
+    ctx.clearRect(0,0,W,H);
+
+    // Background / clouds
+    cloudTimer++;
+    if (cloudTimer > 180 + Math.random()*200) {
+      spawnCloud();
+      cloudTimer = 0;
+    }
+    for (let i = clouds.length -1; i >=0; i--) {
+      clouds[i].update();
+      clouds[i].draw();
+      if (clouds[i].x + clouds[i].w < -50) clouds.splice(i,1);
+    }
+
+    // Ground
+    drawGround();
+
+    // Dino
+    dino.update();
+    dino.draw();
+
+    // Obstacles spawn
+    spawnTimer++;
+    const spawnInterval = Math.max(60, 120 - Math.floor(score/100));
+    if (spawnTimer > spawnInterval) {
+      spawnObstacle();
+      spawnTimer = 0;
+    }
+
+    // Update obstacles
+    for (let i = obstacles.length -1; i >=0; i--) {
+      const o = obstacles[i];
+      o.update();
+      o.draw();
+
+      // passed?
+      if (!o.passed && (o.x + o.w) < dino.x) {
+        o.passed = true;
+        score += 10;
+      }
+
+      // collision
+      if (collides(dino, o)) {
+        gameOver();
+        return;
+      }
+
+      // remove off-screen
+      if (o.x + o.w < -50) obstacles.splice(i,1);
+    }
+
+    // Increase speed slowly
+    if (frame % 120 === 0) {
+      gameSpeed += 0.2;
+    }
+
+    // Draw score
+    scoreEl.textContent = score;
+
+    if (running) {
+      requestAnimationFrame(loop);
+    }
+  }
+
+  // Input
+  function handleJump() {
+    if (!running) {
+      reset();
+      requestAnimationFrame(loop);
+    } else {
+      dino.jump();
+    }
+  }
+
+  window.addEventListener('keydown', (e) => {
+    if (e.code === 'Space' || e.code === 'ArrowUp') {
+      e.preventDefault();
+      handleJump();
+    }
+    if (e.code === 'KeyR') {
+      reset();
+      if (!running) requestAnimationFrame(loop);
+    }
+  });
+
+  // Mouse / touch
+  canvas.addEventListener('mousedown', (e) => {
+    handleJump();
+  });
+  canvas.addEventListener('touchstart', (e) => {
+    e.preventDefault();
+    handleJump();
+  }, {passive:false});
+
+  restartBtn.addEventListener('click', () => {
+    reset();
+    requestAnimationFrame(loop);
+  });
+
+  // Start game
+  reset();
+  // initial clouds
+  for (let i=0;i<3;i++) spawnCloud();
+  requestAnimationFrame(loop);
+
+})();
+</script>
+</body>
+</html>
