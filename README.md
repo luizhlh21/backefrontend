@@ -1,2 +1,2 @@
 # backefrontend
-Coding in HTML,CSS,Javascript and PHP
+Coding in HTML,CSS and Javascript 
